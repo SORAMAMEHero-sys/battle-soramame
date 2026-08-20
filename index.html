@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>マリオ風ゲーム - スマホ版第1章</title>
+    <title>マリオ風ゲーム - ジャンプ編</title>
     <style>
         body {
             background-color: #222;
@@ -21,17 +21,18 @@
             max-width: 100%;
             height: auto;
         }
-        /* スマホ用の操作ボタンエリア */
         .controls {
             margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
         .btn {
             background-color: #ffcc00;
             border: none;
             color: #222;
-            font-size: 24px;
-            padding: 15px 30px;
-            margin: 0 10px;
+            font-size: 22px;
+            padding: 15px 25px;
             border-radius: 10px;
             font-weight: bold;
             touch-action: manipulation;
@@ -43,15 +44,16 @@
 </head>
 <body>
 
-    <h1>スマホでゲーム作り！</h1>
-    <p>下のボタンを押して動かしてみよう</p>
+    <h1>スマホでゲーム作り！第2章</h1>
+    <p>ジャンプ機能を追加したよ！</p>
 
     <!-- キャンバス -->
     <canvas id="gameCanvas" width="400" height="300"></canvas>
 
-    <!-- スマホ用ボタン -->
+    <!-- スマホ用ボタン（左・ジャンプ・右） -->
     <div class="controls">
         <button class="btn" id="leftBtn">◀ 左</button>
+        <button class="btn" id="jumpBtn">⤴ ジャンプ</button>
         <button class="btn" id="rightBtn">右 ▶</button>
     </div>
 
@@ -61,56 +63,85 @@
 
         let player = {
             x: 180,
-            y: 200,
+            y: 100,
             width: 30,
             height: 40,
             speed: 4,
+            velocityY: 0,    // 縦方向のスピード（重力・ジャンプ用）
+            jumpPower: -10,  // ジャンプの強さ（マイナスが上方向）
+            gravity: 0.5,    // 重力の強さ
+            isJumping: false,
             color: "#e52521"
         };
 
-        // ボタンの状態を管理
+        const groundY = 200; // 地面のY座標
+
         let isLeftPressed = false;
         let isRightPressed = false;
 
-        // タップ（タッチ操作＆マウス操作両対応）
+        // ボタンのイベント設定
         const leftBtn = document.getElementById("leftBtn");
         const rightBtn = document.getElementById("rightBtn");
+        const jumpBtn = document.getElementById("jumpBtn");
 
-        // 左ボタン
         leftBtn.addEventListener("touchstart", () => { isLeftPressed = true; });
         leftBtn.addEventListener("touchend", () => { isLeftPressed = false; });
         leftBtn.addEventListener("mousedown", () => { isLeftPressed = true; });
         leftBtn.addEventListener("mouseup", () => { isLeftPressed = false; });
 
-        // 右ボタン
         rightBtn.addEventListener("touchstart", () => { isRightPressed = true; });
         rightBtn.addEventListener("touchend", () => { isRightPressed = false; });
         rightBtn.addEventListener("mousedown", () => { isRightPressed = true; });
         rightBtn.addEventListener("mouseup", () => { isRightPressed = false; });
 
-        function update() {
-            if (isLeftPressed) {
-                player.x -= player.speed;
-            }
-            if (isRightPressed) {
-                player.x += player.speed;
-            }
+        // ジャンプボタンは「押した瞬間」に反応させる
+        jumpBtn.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            jump();
+        });
+        jumpBtn.addEventListener("mousedown", () => {
+            jump();
+        });
 
-            // 画面の端で止める
+        function jump() {
+            // 地面にいるときだけジャンプできる
+            if (!player.isJumping) {
+                player.velocityY = player.jumpPower;
+                player.isJumping = true;
+            }
+        }
+
+        function update() {
+            // 左右移動
+            if (isLeftPressed) player.x -= player.speed;
+            if (isRightPressed) player.x += player.speed;
+
+            // 画面の端制限
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) {
                 player.x = canvas.width - player.width;
+            }
+
+            // 重力の計算
+            player.velocityY += player.gravity;
+            player.y += player.velocityY;
+
+            // 地面との着地判定
+            if (player.y > groundY) {
+                player.y = groundY;
+                player.velocityY = 0;
+                player.isJumping = false;
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 地面
+            // 地面を描く
             ctx.fillStyle = "#00ac00";
-            ctx.fillRect(0, 240, canvas.width, 60);
+            ctx.fillRect(0, groundY + player.height, canvas.width, canvas.height - (groundY + player.height));
 
-            // プレイヤー
+            // プレイヤーを描く
             ctx.fillStyle = player.color;
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
