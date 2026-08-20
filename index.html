@@ -45,7 +45,7 @@
 <body>
 
     <h1>スマホでゲーム作り！第1章：ステージ完成</h1>
-    <p>足場をジャンプして、右端の黄色いゴールを目指せ！</p>
+    <p>足場を下からすり抜けて、右端の黄色いゴールを目指せ！</p>
 
     <!-- キャンバス -->
     <canvas id="gameCanvas" width="400" height="300"></canvas>
@@ -147,18 +147,22 @@
                 player.isJumping = false;
             }
 
-            // 足場（ブロック）との判定
+            // 足場（ブロック）との判定（下からすり抜け、上から着地）
             blocks.forEach(b => {
-                // 上から足場に乗ったとき
-                if (player.x + player.width > b.x && player.x < b.x + b.width &&
-                    player.y + player.height >= b.y && player.y + player.height - player.velocityY <= b.y) {
+                if (
+                    player.velocityY > 0 && // 落下中のみ
+                    player.x + player.width > b.x && 
+                    player.x < b.x + b.width &&
+                    player.y + player.height <= b.y + player.velocityY &&
+                    player.y + player.height >= b.y
+                ) {
                     player.y = b.y - player.height;
                     player.velocityY = 0;
                     player.isJumping = false;
                 }
             });
 
-            // ゴール判定（ゴールに触れたらアラートを出してリセット）
+            // ゴール判定
             if (
                 player.x < goal.x + goal.width &&
                 player.x + player.width > goal.x &&
@@ -166,7 +170,6 @@
                 player.y + player.height > goal.y
             ) {
                 alert("🎉 第1章 クリアおめでとう！ 🎉");
-                // スタート地点に戻す
                 player.x = 30;
                 player.y = 150;
                 player.velocityY = 0;
@@ -174,14 +177,13 @@
         }
 
         function draw() {
-            // 背景クリア
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 地面を描く
             ctx.fillStyle = "#00ac00";
             ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
 
-            // 足場を描く（茶色いブロック）
+            // 足場を描く
             ctx.fillStyle = "#c84c0c";
             blocks.forEach(b => {
                 ctx.fillRect(b.x, b.y, b.width, b.height);
