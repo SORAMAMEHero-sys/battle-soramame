@@ -2,95 +2,125 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>マリオ風ゲーム - 第1章</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>マリオ風ゲーム - スマホ版第1章</title>
     <style>
         body {
             background-color: #222;
             color: white;
             text-align: center;
             font-family: sans-serif;
+            margin: 0;
+            padding: 10px;
         }
         canvas {
-            background-color: #5c94fc; /* マリオの空っぽい青色 */
+            background-color: #5c94fc;
             display: block;
-            margin: 20px auto;
-            border: 4px solid #fff;
+            margin: 10px auto;
+            border: 3px solid #fff;
+            max-width: 100%;
+            height: auto;
+        }
+        /* スマホ用の操作ボタンエリア */
+        .controls {
+            margin-top: 15px;
+        }
+        .btn {
+            background-color: #ffcc00;
+            border: none;
+            color: #222;
+            font-size: 24px;
+            padding: 15px 30px;
+            margin: 0 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            background-color: #ff9900;
         }
     </style>
 </head>
 <body>
 
-    <h1>ゲーム作り 第1章：キャラクターを動かそう！</h1>
-    <p>キーボードの 「←」「→」 キーを押して、四角いプレイヤーを動かしてみよう！</p>
+    <h1>スマホでゲーム作り！</h1>
+    <p>下のボタンを押して動かしてみよう</p>
 
-    <!-- ゲームを描画するキャンバス -->
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <!-- キャンバス -->
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+
+    <!-- スマホ用ボタン -->
+    <div class="controls">
+        <button class="btn" id="leftBtn">◀ 左</button>
+        <button class="btn" id="rightBtn">右 ▶</button>
+    </div>
 
     <script>
-        // 1. キャンバスの準備
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // 2. プレイヤー（マリオの代わり）のデータ
         let player = {
-            x: 100,       // X座標（横の位置）
-            y: 300,       // Y座標（縦の位置）
-            width: 30,    // 幅
-            height: 40,   // 高さ
-            speed: 5,     // 移動スピード
-            color: "#e52521" // マリオっぽい赤色
+            x: 180,
+            y: 200,
+            width: 30,
+            height: 40,
+            speed: 4,
+            color: "#e52521"
         };
 
-        // 3. キーボードが押されているかを記録する箱
-        let keys = {};
+        // ボタンの状態を管理
+        let isLeftPressed = false;
+        let isRightPressed = false;
 
-        window.addEventListener("keydown", (e) => {
-            keys[e.code] = true;
-        });
+        // タップ（タッチ操作＆マウス操作両対応）
+        const leftBtn = document.getElementById("leftBtn");
+        const rightBtn = document.getElementById("rightBtn");
 
-        window.addEventListener("keyup", (e) => {
-            keys[e.code] = false;
-        });
+        // 左ボタン
+        leftBtn.addEventListener("touchstart", () => { isLeftPressed = true; });
+        leftBtn.addEventListener("touchend", () => { isLeftPressed = false; });
+        leftBtn.addEventListener("mousedown", () => { isLeftPressed = true; });
+        leftBtn.addEventListener("mouseup", () => { isLeftPressed = false; });
 
-        // 4. 画面を更新するメインループ
+        // 右ボタン
+        rightBtn.addEventListener("touchstart", () => { isRightPressed = true; });
+        rightBtn.addEventListener("touchend", () => { isRightPressed = false; });
+        rightBtn.addEventListener("mousedown", () => { isRightPressed = true; });
+        rightBtn.addEventListener("mouseup", () => { isRightPressed = false; });
+
         function update() {
-            // キー入力による移動処理
-            if (keys["ArrowLeft"] || keys["KeyA"]) {
-                player.x -= player.speed; // 左へ移動
+            if (isLeftPressed) {
+                player.x -= player.speed;
             }
-            if (keys["ArrowRight"] || keys["KeyD"]) {
-                player.x += player.speed; // 右へ移動
+            if (isRightPressed) {
+                player.x += player.speed;
             }
 
-            // 画面の端から出ないように制限
+            // 画面の端で止める
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) {
                 player.x = canvas.width - player.width;
             }
         }
 
-        // 5. 画面を描画する関数
         function draw() {
-            // 画面全体を一度クリア（消去）する
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 地面を描く（茶色い長方形）
-            ctx.fillStyle = "#00ac00"; // 地面の上部（緑）
-            ctx.fillRect(0, 340, canvas.width, 60);
+            // 地面
+            ctx.fillStyle = "#00ac00";
+            ctx.fillRect(0, 240, canvas.width, 60);
 
-            // プレイヤーを描く
+            // プレイヤー
             ctx.fillStyle = player.color;
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
-        // 6. 1秒間に約60回、画面を更新・描画し続ける心臓部
         function loop() {
             update();
             draw();
             requestAnimationFrame(loop);
         }
 
-        // ゲームスタート！
         loop();
     </script>
 
