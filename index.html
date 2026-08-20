@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>マリオ風ゲーム - ジャンプ編</title>
+    <title>マリオ風ゲーム - 第1章ステージ完成</title>
     <style>
         body {
             background-color: #222;
@@ -44,13 +44,13 @@
 </head>
 <body>
 
-    <h1>スマホでゲーム作り！第2章</h1>
-    <p>ジャンプ機能を追加したよ！</p>
+    <h1>スマホでゲーム作り！第1章：ステージ完成</h1>
+    <p>足場をジャンプして、右端の黄色いゴールを目指せ！</p>
 
     <!-- キャンバス -->
     <canvas id="gameCanvas" width="400" height="300"></canvas>
 
-    <!-- スマホ用ボタン（左・ジャンプ・右） -->
+    <!-- スマホ用ボタン -->
     <div class="controls">
         <button class="btn" id="leftBtn">◀ 左</button>
         <button class="btn" id="jumpBtn">⤴ ジャンプ</button>
@@ -61,20 +61,36 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        // プレイヤーのデータ
         let player = {
-            x: 180,
-            y: 100,
-            width: 30,
-            height: 40,
+            x: 30,
+            y: 150,
+            width: 25,
+            height: 35,
             speed: 4,
-            velocityY: 0,    // 縦方向のスピード（重力・ジャンプ用）
-            jumpPower: -10,  // ジャンプの強さ（マイナスが上方向）
-            gravity: 0.5,    // 重力の強さ
+            velocityY: 0,
+            jumpPower: -9,
+            gravity: 0.4,
             isJumping: false,
             color: "#e52521"
         };
 
-        const groundY = 200; // 地面のY座標
+        const groundY = 230; // 基本の地面の高さ
+
+        // ステージにある「足場」のリスト（x, y, width, height）
+        const blocks = [
+            { x: 120, y: 160, width: 60, height: 15 }, // 1つ目の足場
+            { x: 220, y: 120, width: 60, height: 15 }, // 2つ目の足場
+        ];
+
+        // ゴールのデータ（黄色いブロック）
+        const goal = {
+            x: 340,
+            y: 180,
+            width: 30,
+            height: 50,
+            color: "#f8d000"
+        };
 
         let isLeftPressed = false;
         let isRightPressed = false;
@@ -94,7 +110,6 @@
         rightBtn.addEventListener("mousedown", () => { isRightPressed = true; });
         rightBtn.addEventListener("mouseup", () => { isRightPressed = false; });
 
-        // ジャンプボタンは「押した瞬間」に反応させる
         jumpBtn.addEventListener("touchstart", (e) => {
             e.preventDefault();
             jump();
@@ -104,7 +119,6 @@
         });
 
         function jump() {
-            // 地面にいるときだけジャンプできる
             if (!player.isJumping) {
                 player.velocityY = player.jumpPower;
                 player.isJumping = true;
@@ -126,20 +140,56 @@
             player.velocityY += player.gravity;
             player.y += player.velocityY;
 
-            // 地面との着地判定
-            if (player.y > groundY) {
-                player.y = groundY;
+            // 基本の地面との着地判定
+            if (player.y + player.height > groundY) {
+                player.y = groundY - player.height;
                 player.velocityY = 0;
                 player.isJumping = false;
+            }
+
+            // 足場（ブロック）との判定
+            blocks.forEach(b => {
+                // 上から足場に乗ったとき
+                if (player.x + player.width > b.x && player.x < b.x + b.width &&
+                    player.y + player.height >= b.y && player.y + player.height - player.velocityY <= b.y) {
+                    player.y = b.y - player.height;
+                    player.velocityY = 0;
+                    player.isJumping = false;
+                }
+            });
+
+            // ゴール判定（ゴールに触れたらアラートを出してリセット）
+            if (
+                player.x < goal.x + goal.width &&
+                player.x + player.width > goal.x &&
+                player.y < goal.y + goal.height &&
+                player.y + player.height > goal.y
+            ) {
+                alert("🎉 第1章 クリアおめでとう！ 🎉");
+                // スタート地点に戻す
+                player.x = 30;
+                player.y = 150;
+                player.velocityY = 0;
             }
         }
 
         function draw() {
+            // 背景クリア
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 地面を描く
             ctx.fillStyle = "#00ac00";
-            ctx.fillRect(0, groundY + player.height, canvas.width, canvas.height - (groundY + player.height));
+            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+            // 足場を描く（茶色いブロック）
+            ctx.fillStyle = "#c84c0c";
+            blocks.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+
+            // ゴールを描く
+            ctx.fillStyle = goal.color;
+            ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
 
             // プレイヤーを描く
             ctx.fillStyle = player.color;
