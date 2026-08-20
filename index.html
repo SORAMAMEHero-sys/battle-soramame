@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>マリオ風ゲーム - 第1章</title>
+    <style>
+        body {
+            background-color: #222;
+            color: white;
+            text-align: center;
+            font-family: sans-serif;
+        }
+        canvas {
+            background-color: #5c94fc; /* マリオの空っぽい青色 */
+            display: block;
+            margin: 20px auto;
+            border: 4px solid #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ゲーム作り 第1章：キャラクターを動かそう！</h1>
+    <p>キーボードの 「←」「→」 キーを押して、四角いプレイヤーを動かしてみよう！</p>
+
+    <!-- ゲームを描画するキャンバス -->
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <script>
+        // 1. キャンバスの準備
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // 2. プレイヤー（マリオの代わり）のデータ
+        let player = {
+            x: 100,       // X座標（横の位置）
+            y: 300,       // Y座標（縦の位置）
+            width: 30,    // 幅
+            height: 40,   // 高さ
+            speed: 5,     // 移動スピード
+            color: "#e52521" // マリオっぽい赤色
+        };
+
+        // 3. キーボードが押されているかを記録する箱
+        let keys = {};
+
+        window.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
+
+        // 4. 画面を更新するメインループ
+        function update() {
+            // キー入力による移動処理
+            if (keys["ArrowLeft"] || keys["KeyA"]) {
+                player.x -= player.speed; // 左へ移動
+            }
+            if (keys["ArrowRight"] || keys["KeyD"]) {
+                player.x += player.speed; // 右へ移動
+            }
+
+            // 画面の端から出ないように制限
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) {
+                player.x = canvas.width - player.width;
+            }
+        }
+
+        // 5. 画面を描画する関数
+        function draw() {
+            // 画面全体を一度クリア（消去）する
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 地面を描く（茶色い長方形）
+            ctx.fillStyle = "#00ac00"; // 地面の上部（緑）
+            ctx.fillRect(0, 340, canvas.width, 60);
+
+            // プレイヤーを描く
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // 6. 1秒間に約60回、画面を更新・描画し続ける心臓部
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        // ゲームスタート！
+        loop();
+    </script>
+
+</body>
+</html>
